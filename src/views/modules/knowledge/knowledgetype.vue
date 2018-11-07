@@ -15,7 +15,7 @@
             <el-table-column type="selection" header-align="center" align="center" width="50"></el-table-column>
             <el-table-column prop="typeName" header-align="center" align="center"  label="类型名称"></el-table-column>
             <el-table-column prop="description" header-align="center" align="center"  label="描述"></el-table-column>
-            <el-table-column fixed="right" header-align="center" align="center"  label="操作">
+            <el-table-column header-align="center" align="center"  label="操作">
                 <template slot-scope="scope">
                     <el-button  v-if="isAuth('knowledge:type:update')" type="text" size="small" @click.native="addOrUpdateHandle(scope.row.id)">修改</el-button>
                     <el-button  v-if="isAuth('knowledge:type:delete')" type="text" size="small" @click.native="deleteHandle(scope.row.id)">删除</el-button>

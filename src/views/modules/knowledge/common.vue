@@ -8,7 +8,7 @@
         <el-table-column prop="brief" header-align="center" align="center"  label="简要描述"></el-table-column>
         <el-table-column prop="userName" header-align="center" align="center"  label="提交人"></el-table-column>
         <el-table-column prop="createDate" header-align="center" align="center"  label="创建时间"></el-table-column>
-        <el-table-column fixed="right" header-align="center" align="center"  label="操作">
+        <el-table-column header-align="center" align="center"  label="操作">
                 <template slot-scope="scope">
                     <el-button type="text" size="small" @click="detailHandle(scope.row.id)">查看详情</el-button>
                     <el-button v-if="isAuth('knowledge:content:sendBack')"  type="text" size="small" @click="sendBackHandle(scope.row.id)">退回</el-button>

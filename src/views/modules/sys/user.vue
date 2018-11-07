@@ -65,7 +65,6 @@
         label="创建时间">
       </el-table-column>
       <el-table-column
-        fixed="right"
         header-align="center"
         align="center"
         width="150"
