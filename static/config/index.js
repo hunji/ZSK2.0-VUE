@@ -14,4 +14,7 @@
 
   // oss存放文件ftp地址
   window.SITE_CONFIG['ossftpurl']  = 'http://localhost:80/oaattach';
+
+  // 提示等待时间
+  window.SITE_CONFIG['wait']  = 500;
 })();
