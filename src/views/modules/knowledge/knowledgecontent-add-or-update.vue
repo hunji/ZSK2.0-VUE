@@ -117,7 +117,7 @@ export default{
       this.dataForm.id = id || 0
       this.visible = true
       this.$http({
-        url: this.$http.adornUrl('/knowledge/type/allInfo'),
+        url: this.$http.adornUrl('/knowledge/type/allInfobuttheme'),
         method: 'get',
         params: this.$http.adornParams()
       }).then(({data}) => {
