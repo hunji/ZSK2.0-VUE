@@ -13,7 +13,7 @@
   window.SITE_CONFIG['cdnUrl']  = window.SITE_CONFIG.domain + window.SITE_CONFIG.version;
 
   // oss存放文件ftp地址
-  window.SITE_CONFIG['ossftpurl']  = 'http://localhost:80/oaattach';
+  window.SITE_CONFIG['ossftpurl']  = 'http://localhost:80/oaattach/';
 
   // 提示等待时间
   window.SITE_CONFIG['wait']  = 500;

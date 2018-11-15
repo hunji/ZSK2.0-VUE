@@ -1,14 +1,15 @@
 <template>
   <el-dialog width="70%" :title=" '内容详情'" :close-on-click-modal="false" :visible.sync="visible" >
       <el-tabs tab-position="left" value="first">
-      <el-tab-pane label="知识内容" name="first">
+      <el-tab-pane label="知识内容" name="first" v-loading="dataLoading">
         <div style="display:table;margin:0 auto;width:85%">
           <div ><h2>{{dataForm.title}}</h2></div>
           <div class="meta">
-            <span>类型：{{ dataForm.typeId}} |</span>
-            <span>创建时间 {{ dataForm.createDate }}</span>
-            <span>发布时间 {{ dataForm.reviewDate }}</span>
+            ({{ dataForm.userName }})
+            <icon-svg name="time"></icon-svg><span>创建时间 {{ dataForm.createDate | formatDate}}</span>
+            <icon-svg name="time"></icon-svg> <span>发布时间 {{ dataForm.reviewDate | formatDate}}</span>
             <span style="margin-left:300px;">点赞数 {{ dataForm.likeNum }}</span>
+            <a style="margin-left:20px;"  href="#" @click="open(dataForm.id)"><icon-svg name="dianzan"></icon-svg></a>
           </div>
           <div class="content">  简要描述：{{ dataForm.brief }} </div>
           <span v-html="dataForm.content"></span>
@@ -29,6 +30,7 @@
 </template>
 
 <script>
+import { formatDate } from '@/utils/validate'
 export default {
   data () {
     return {
@@ -41,16 +43,19 @@ export default {
         createDate: '',
         reviewDate: '',
         state: '',
-        brief: ''
+        brief: '',
+        userName: ''
       },
       fileList: [],
-      imgUrl: window.SITE_CONFIG['ossftpurl']
+      imgUrl: window.SITE_CONFIG['ossftpurl'],
+      dataLoading: false
     }
   },
   methods: {
     init (id) {
       this.dataForm.id = id || 0
       this.visible = true
+      this.dataLoading = true
       this.$nextTick(() => {
         if (this.dataForm.id) {
           this.$http({
@@ -60,6 +65,7 @@ export default {
             if (data && data.code === 0) {
               this.dataForm = data.knowledgeContent
             }
+            this.dataLoading = false
           })
         }
       })
@@ -80,6 +86,27 @@ export default {
           })
         }
       })
+    },
+    open (id) {
+      this.$http({
+        url: this.$http.adornUrl(`/knowledge/content/search/addLikeSum/${this.dataForm.id}`),
+        method: 'post',
+        data: this.$http.adornData()
+      }).then(({ data }) => {
+        if (data && data.code === 0) {
+          this.$message({
+            message: '点赞成功',
+            type: 'success'
+          })
+          this.init(id)
+        }
+      })
+    }
+  },
+  filters: {
+    formatDate (time) {
+      let date = new Date(time)
+      return formatDate(date, 'yyyy-MM-dd')
     }
   }
 }

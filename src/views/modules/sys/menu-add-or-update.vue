@@ -223,7 +223,7 @@
       }
     }
     &__icon-popover {
-      max-width: 370px;
+      max-width: 570px;
     }
     &__icon-list {
       max-height: 180px;
