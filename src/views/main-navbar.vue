@@ -30,8 +30,10 @@
               <img src="~@/assets/img/avatar.png" :alt="userName">{{ userName }}
             </span>
             <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item @click.native="updatePasswordHandle()">修改密码</el-dropdown-item>
-              <el-dropdown-item @click.native="logoutHandle()">退出</el-dropdown-item>
+              <el-dropdown-item v-if="userName !== 'guest'" @click.native="updatePasswordHandle()">修改密码</el-dropdown-item>
+              <el-dropdown-item v-if="userName !== 'guest'" @click.native="logoutHandle()">退出</el-dropdown-item>
+
+              <el-dropdown-item v-if="userName === 'guest'" @click.native="guestHandle()">管理员登录</el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>
         </el-menu-item>
@@ -96,6 +98,10 @@
             }
           })
         }).catch(() => {})
+      },
+      // 返回登录页面
+      guestHandle () {
+        this.$router.push({ name: 'login' })
       }
     }
   }

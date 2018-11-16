@@ -1,6 +1,22 @@
 <template>
 <div>
-  <el-form :inline="true" :model="dataForm" >
+  <el-row :gutter="20">
+    <el-col :span="4">
+      <div>
+        <el-tree
+            :data="typeList"
+            :props="typeListTreeProps"
+            node-key="id"
+            ref="typeListTree"
+            @current-change="typeListTreeCurrentChangeHandle"
+            :default-expand-all="true"
+            :highlight-current="true"
+            :expand-on-click-node="false">
+          </el-tree>
+      </div>
+    </el-col>
+    <el-col :span="20">
+        <el-form :inline="true" :model="dataForm" >
     <el-form-item style="margin-top:20px;">
       <!--从后台查询出来关联词有个bug  必须要按回车键才能进行使用；这里去掉了-->
       <!--<el-select style="width:500px;" v-model="dataForm.key" filterable remote reserve-keyword allow-create default-first-option
@@ -89,12 +105,16 @@
     <p></p>
     </div>
    </el-col>
-</el-row>
+  </el-row>
+    </el-col>
+  </el-row>
+
 <detail v-if="detailVisible" ref="detail"  @refreshDataList="getDataList"></detail>
 </div>
 </template>
 
 <script>
+import { treeDataTranslate } from '@/utils'
 import detail from './detail'
 export default {
   data () {
@@ -103,7 +123,13 @@ export default {
         key: '',
         dianzanCount: 0,
         viewCount: 0,
-        dateRange: '全部'
+        dateRange: '全部',
+        typeID: 0
+      },
+      typeList: [],
+      typeListTreeProps: {
+        label: 'typeName',
+        children: 'children'
       },
       dataList: [],
       dianzanList: [0, 2, 10, 100],
@@ -126,9 +152,25 @@ export default {
     detail
   },
   mounted () {
+    this.getTypeTree()
     this.getDataList()
   },
   methods: {
+    // 获取类型树
+    getTypeTree () {
+      this.$http({
+        url: this.$http.adornUrl('/knowledge/type/select'),
+        method: 'get',
+        params: this.$http.adornParams()
+      }).then(({data}) => {
+        this.typeList = treeDataTranslate(data.typeList, 'id')
+      })
+    },
+    // 类型树选中
+    typeListTreeCurrentChangeHandle (data, node) {
+      this.dataForm.typeID = data.id
+      this.getDataList()
+    },
     getDataList () {
       this.dataListLoading = true
       this.$http({
@@ -140,7 +182,8 @@ export default {
           key: this.dataForm.key,
           dianzanCount: this.dataForm.dianzanCount,
           viewCount: this.dataForm.viewCount,
-          dateRange: this.dataForm.dateRange
+          dateRange: this.dataForm.dateRange,
+          typeID: this.dataForm.typeID
         })
       }).then(({ data }) => {
         if (data && data.code === 0) {

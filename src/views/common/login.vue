@@ -27,6 +27,9 @@
               </el-row>
             </el-form-item>
             <el-form-item>
+              <a href="#" @click="guestLogin()">游客登录</a>
+            </el-form-item>
+            <el-form-item>
               <el-button class="login-btn-submit" type="primary" @click="dataFormSubmit()">登录</el-button>
             </el-form-item>
           </el-form>
@@ -94,6 +97,18 @@
       getCaptcha () {
         this.dataForm.uuid = getUUID()
         this.captchaPath = this.$http.adornUrl(`/captcha.jpg?uuid=${this.dataForm.uuid}`)
+      },
+      // 游客登录
+      guestLogin () {
+        this.$http({
+          url: this.$http.adornUrl('/sys/guest'),
+          method: 'post'
+        }).then(({data}) => {
+          if (data && data.code === 0) {
+            this.$cookie.set('token', data.token)
+            this.$router.replace({ name: 'home' })
+          }
+        })
       }
     }
   }
