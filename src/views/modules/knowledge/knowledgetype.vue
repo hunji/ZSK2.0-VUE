@@ -8,7 +8,7 @@
         </el-form>
         <el-table border :data="dataList" v-loading="dataListLoading" style="width: 100%;">
             <el-table-column prop="id" header-align="center" align="center" width="50" label="编号"></el-table-column>
-            <table-tree-column prop="typeName" header-align="center" align="center"  label="类型名称"></table-tree-column>
+            <table-tree-column prop="typeName" header-align="center"  label="类型名称"></table-tree-column>
             <el-table-column prop="description" header-align="center" align="center"  label="描述"></el-table-column>
             <el-table-column header-align="center" align="center"  label="操作">
                 <template slot-scope="scope">
