@@ -1,4 +1,3 @@
-
 <template>
   <el-row :gutter="20">
     <el-col :span="4">
@@ -23,6 +22,9 @@
           <el-form-item>
             <el-button @click="getDataList()">查询</el-button>
           </el-form-item>
+          <el-form-item>
+            <el-button type="primary" style="margin-left:350px" @click="showQuestion()">在线问答</el-button>
+          </el-form-item>
       </el-form>
       <el-table :data="dataList" border v-loading="dataListLoading" style="width: 100%;">
         <el-table-column type="index" header-align="center" align="center" width="50"></el-table-column>
@@ -43,13 +45,16 @@
         </el-pagination>
         <!-- 弹窗, 新增 / 修改 -->
         <detail v-if="detailVisible" ref="detail"  @refreshDataList="getDataList"></detail>
-    </div></el-col>
+    </div>
+    <websocket v-show="questionVisible"></websocket>
+    </el-col> 
   </el-row>
 </template>
 
 <script>
 import { treeDataTranslate } from '@/utils'
 import detail from './detail'
+import websocket from '@/components/websocket'
 export default {
   data () {
     return {
@@ -67,11 +72,13 @@ export default {
       pageSize: 10,
       totalPage: 0,
       dataListLoading: false,
-      detailVisible: false
+      detailVisible: false,
+      questionVisible: false
     }
   },
   components: {
-    detail
+    detail,
+    websocket
   },
   activated () {
     this.getTypeTree()
@@ -157,6 +164,10 @@ export default {
     typeListTreeCurrentChangeHandle (data, node) {
       this.dataForm.type_id = data.id
       this.getDataList()
+    },
+    // 查看在线问答模块
+    showQuestion () {
+      this.questionVisible = !this.questionVisible
     }
   }
 }
@@ -167,5 +178,17 @@ export default {
     background: #e5e9f2;
     border-radius: 4px;
     min-height: 36px;
+  }
+  .online-question {
+    position: fixed;
+    bottom: 20px;
+    right: 15px;
+    z-index: 99;
+  }
+  .question-content{
+    position: absolute;
+    bottom: 20px;
+    right: 15px;
+    width: 90%;
   }
 </style>
