@@ -46,7 +46,6 @@
         <!-- 弹窗, 新增 / 修改 -->
         <detail v-if="detailVisible" ref="detail"  @refreshDataList="getDataList"></detail>
     </div>
-    <websocket v-show="questionVisible"></websocket>
     </el-col> 
   </el-row>
 </template>
@@ -54,7 +53,6 @@
 <script>
 import { treeDataTranslate } from '@/utils'
 import detail from './detail'
-import websocket from '@/components/websocket'
 export default {
   data () {
     return {
@@ -72,13 +70,11 @@ export default {
       pageSize: 10,
       totalPage: 0,
       dataListLoading: false,
-      detailVisible: false,
-      questionVisible: false
+      detailVisible: false
     }
   },
   components: {
-    detail,
-    websocket
+    detail
   },
   activated () {
     this.getTypeTree()
@@ -164,10 +160,6 @@ export default {
     typeListTreeCurrentChangeHandle (data, node) {
       this.dataForm.type_id = data.id
       this.getDataList()
-    },
-    // 查看在线问答模块
-    showQuestion () {
-      this.questionVisible = !this.questionVisible
     }
   }
 }
