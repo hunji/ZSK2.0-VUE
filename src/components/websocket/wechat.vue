@@ -3,7 +3,7 @@
   <div class="sidebar">
     <div class="card">
       <header>
-        <img src="~@/assets/img/avatar.png" class="avatar" width="40" height="40">
+        <img src="~@/assets/img/avatar.png" class="avatar" style="width:40px;">
        <p class="name">{{userName}}</p>
       </header>
       <footer>
@@ -15,8 +15,8 @@
         <li v-for="guest in guestNames" :key="guest.userName" :class="{ active: guest.userName === currentsid }" 
           @click="clickUser(guest.userName)">
           <!-- v-if  v-else 此处设置了是否在线的样式-->
-          <img v-if="guest.isOnline" class="avatar" width="30" height="30" src="~@/assets/img/1.jpg">
-          <img v-else class="avatar" width="30" height="30" src="~@/assets/img/2.jpg"> 
+          <img v-if="guest.isOnline" class="avatar" src="~@/assets/img/1.jpg" style="width:30px;">
+          <img v-else class="avatar" src="~@/assets/img/2.jpg" style="width:30px;"> 
           <!-- v-if  v-else 此处设置了是否有新消息的样式-->
           <el-badge value="new" class="item" v-if="guest.hasNewInfo">
             <p class="name">{{guest.userName}}</p>
@@ -34,37 +34,51 @@
             <span>{{message.createDate}}</span>
           </p>
           <div class="main" :class="{ self: message.userName !==userName }">
-            <img v-if="message.userName ===userName" class="avatar" width="30" height="30" src="~@/assets/img/avatar.png">
-            <img v-else class="avatar" width="30" height="30" src="~@/assets/img/1.jpg"> 
-            <div class="text" v-html="message.content">{{message.content}}</div>
+            <img v-if="message.userName ===userName" class="avatar" style="width:30px;" src="~@/assets/img/avatar.png">
+            <img v-else class="avatar" style="width:30px;" src="~@/assets/img/1.jpg"> 
+            <div class="text" v-html="message.content"></div>
           </div>
         </li>
       </ul>
     </div>
-    <!-- TODO:如果增加上传图片和查看历史记录功能的话 -->
+    <!-- 加上传图片和查看历史记录功能 -->
     <div style="border-top:1px solid #aaa;width:100%;height:30px;">
-      <icon-svg style="margin:5px;float:right;cursor: pointer;fill:black;" name="time"></icon-svg>
-      <icon-svg style="margin-left:10px;margin-top:5px;float:left;cursor: pointer;fill:black;" name="image"></icon-svg>
+      <div style="margin:2px;float:right;cursor: pointer;fill:black;" >
+         <el-button size="mini" type="primary" @click="contentSubmit">发送消息</el-button>
+      </div >
+      <div style="margin-left:10px;margin-top:8px;float:left;cursor: pointer;fill:black;" @click="getHistoryData">
+         <icon-svg  name="time"></icon-svg>
+      </div>
+      <div style="margin-left:10px;margin-top:8px;float:left;cursor: pointer;fill:black;" @click="uploadHandle">
+         <icon-svg  name="image"></icon-svg>
+      </div>
     </div>
     <div class="content">
-      <el-input rows="7" type="textarea" placeholder="按 Ctrl + Enter 发送" v-model="chatContent" @keyup.native="addContent"></el-input>
+      <el-input autofocus rows="7" type="textarea" placeholder="按 Ctrl + Enter 发送" v-model="chatContent" @keyup.native="addContent"></el-input>
     </div>
     <audio src="/static/video/msg.wav" id="notice"></audio>
+    <upload-w-s v-if="uploadVisible" ref="upload" @addImgPathToContent="addImgContent"></upload-w-s>
   </div>
 </div>
 </template>
 <script>
+import uploadWS from '@/components/websocket/upload-ws'
+
 export default {
   name: 'wechat',
+  components: {
+    uploadWS
+  },
   data () {
     return {
       userName: '',
       guestNames: [],
       currentsid: '',
       currentMessages: [],
-      chatContent: '<img class="avatar" width="30" height="30" src="~@/assets/img/1.jpg">',
+      chatContent: '',
       websocket: null,
-      isguest: false
+      isguest: false,
+      uploadVisible: false
     }
   },
   activated () {
@@ -187,18 +201,26 @@ export default {
         method: 'get',
         params: this.$http.adornParams({
           userName: this.userName,
-          SID: this.currentsid
+          SID: this.currentsid,
+          page: 1,
+          limit: 20
         })
       }).then(({data}) => {
+        console.log(this.currentMessages)
+        console.log(data)
         if (data && data.code === 0) {
-          console.log(data)
-          this.currentMessages = data.contentList
+          this.currentMessages = data.page.list
         }
       })
     },
     // 发送交谈内容
     addContent (e) {
       if (e.ctrlKey && e.keyCode === 13 && this.chatContent.length) {
+        this.contentSubmit()
+      }
+    },
+    contentSubmit () {
+      if (this.chatContent.length) {
         let wsMessage = {
           userName: '',
           content: '',
@@ -225,6 +247,24 @@ export default {
         console.log('发送消息:' + JSON.stringify(wsMessage))
         this.websocket.send(JSON.stringify(wsMessage))
       }
+    },
+    // 上传文件
+    uploadHandle () {
+      console.log('clickme1')
+      this.uploadVisible = true
+      this.$nextTick(() => {
+        this.$refs.upload.init()
+      })
+    },
+    addImgContent (imgList) {
+      // <img class="avatar" width="30" height="30" src="~@/assets/img/1.jpg">
+      imgList.forEach(element => {
+        let imgStr = '<img src="' + element + '">'
+        this.chatContent += imgStr
+      })
+    },
+    getHistoryData () {
+      this.$emit('getHistory', this.userName, this.currentsid)
     }
   }
 }
@@ -261,10 +301,6 @@ export default {
 }
 #imChat .message {
   height: calc(100% - 180px);
-}
-img{
-  width: 30px;
-  height: 30px;
 }
 ul{
   list-style-type: none; 

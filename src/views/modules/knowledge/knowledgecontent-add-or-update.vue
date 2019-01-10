@@ -243,8 +243,9 @@ export default{
     // 删除调用函数
     handleRemove (file, fileList) {
       this.$http({
-        url: this.$http.adornUrl(`/sys/oss/delete/${file.id}`),
-        method: 'post'
+        url: this.$http.adornUrl('/sys/oss/delete'),
+        method: 'post',
+        data: this.$http.adornData([file.id], false)
       }).then(({data}) => {
         if (data && data.code === 0) {
           this.getFiles()

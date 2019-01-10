@@ -10,7 +10,6 @@ import '@/assets/scss/index.scss'
 import httpRequest from '@/utils/httpRequest' // api: https://github.com/axios/axios
 import { isAuth } from '@/utils'
 import cloneDeep from 'lodash/cloneDeep'
-import '@/directive'                          // 自定义了组件 scroll-down
 
 Vue.use(VueCookie)
 Vue.config.productionTip = false
