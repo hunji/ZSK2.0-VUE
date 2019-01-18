@@ -6,12 +6,13 @@
     :visible.sync="visible">
     <el-upload
       :action="url"
-      list-type="picture-card"
+      list-type="picture"
       :on-success="successHandle"
-      multiple
+      :file-list="fileList"
       style="text-align: center;">
-      <i class="el-icon-upload"></i>
-      <div class="el-upload__tip" slot="tip">只支持jpg、png、gif格式的图片！</div>
+      <!-- <i class="el-icon-upload"></i> -->
+      <el-button size="small" type="primary">点击上传</el-button>
+      <div class="el-upload__tip" slot="tip">支持jpg、png、gif格式的图片,以及其他类型的文件！</div>
     </el-upload>
   </el-dialog>
 </template>
@@ -67,7 +68,6 @@
           let returnData = this.fileList.map(item => {
             return this.imgUrl + item.response.url
           })
-          this.fileList = []
           this.$emit('addImgPathToContent', returnData)
         }
         this.fileList = []

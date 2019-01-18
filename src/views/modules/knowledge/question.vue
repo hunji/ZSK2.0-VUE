@@ -2,11 +2,6 @@
     <div>
         <wechat @getHistory='getHistory'></wechat>
      
-        <el-form :inline="true" @keyup.enter.native="getDataList()">
-          <el-form-item>
-            
-          </el-form-item>
-        </el-form>
         <el-table :data="dataList" border v-loading="dataListLoading" style="width: 100%;">
             <el-table-column prop="content" header-align="center" align="center"  label="内容">
               <template slot-scope="scope">

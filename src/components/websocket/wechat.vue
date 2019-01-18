@@ -102,7 +102,7 @@ export default {
   methods: {
     // 建立websocket连接
     initWebsocket () {
-      var _this = this
+      let _this = this
       if ('WebSocket' in window) {
         _this.websocket = new WebSocket('ws://localhost:8081/renren-fast/websocket/' + this.$store.state.user.name)
       } else {
@@ -258,9 +258,16 @@ export default {
     },
     addImgContent (imgList) {
       // <img class="avatar" width="30" height="30" src="~@/assets/img/1.jpg">
+      // <a href="http://localhost:80/oaattach///20190110//bdcdyh不一致问题修改.txt" target="_blank">bdcdyh不一致问题修改.txt</a>
       imgList.forEach(element => {
-        let imgStr = '<img src="' + element + '">'
+        let imgStr
+        if (element.endsWith('png') || element.endsWith('jpg') || element.endsWith('gif')) {
+          imgStr = '<img src="' + element + '">'
+        } else {
+          imgStr = '<a href="' + element + '" target="_blank">' + element.substr(element.lastIndexOf('//') + 2) + '</a>'
+        }
         this.chatContent += imgStr
+        this.chatContent += '</br>'
       })
     },
     getHistoryData () {

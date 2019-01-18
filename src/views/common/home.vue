@@ -1,22 +1,85 @@
 <template>
   <div class="mod-home">
-    <h3>项目介绍（知识库管理）</h3>
-    <ul>
-      <li>每个人可以看到公共知识库</li>
-      <li>每个人可以编辑提交知识类型</li>
-      <li>每个人可以编辑提交知识内容</li>
-      <li>增加了文件上传功能</li>
-      <li>有审核权限的人可以审核提交人提交的知识内容，审核通过的可以在公共知识库中显示</li>
-      <li>账号是人名称缩写 如张三：zhangs;密码与账号一致</li>
-      <li>增加了游客功能，所有人可以来进行查询知识库</li>
-      <li>查询细化为了 公共查询、高级查询和综合查询</li>
-    </ul>
+    <h3>在线问答</h3>
+    <wechat @getHistory='getHistory'></wechat>
+     
+        <el-table :data="dataList" border v-loading="dataListLoading" style="width: 100%;">
+            <el-table-column prop="content" header-align="center" align="center"  label="内容">
+              <template slot-scope="scope">
+                <div class="text" v-html="scope.row.content"></div>
+              </template>
+            </el-table-column>
+            <el-table-column prop="userName" header-align="center" align="center"  label="发起人" width="180"></el-table-column>
+            <el-table-column prop="sid" header-align="center" align="center"  label="接收人" width="180"></el-table-column>
+            <el-table-column prop="createDate" header-align="center" align="center"  label="创建时间" width="180"></el-table-column>
+        </el-table>
+        <el-pagination @size-change="sizeChangeHandle" @current-change="currentChangeHandle" :current-page="pageIndex"
+            :page-sizes="[10, 20, 50, 100]" :page-size="pageSize" :total="totalPage" layout="total, sizes, prev, pager, next, jumper">
+        </el-pagination>
   </div>
 </template>
 
 <script>
-  export default {
+import wechat from '@/components/websocket/wechat'
+export default {
+  components: {
+    wechat
+  },
+  data () {
+    return {
+      dataList: [],
+      pageIndex: 1,
+      pageSize: 10,
+      totalPage: 0,
+      userName: '',
+      SID: '',
+      dataListLoading: false
+    }
+  },
+  activated () {
+    // this.getDataList()
+  },
+  methods: {
+    getDataList () {
+      this.dataListLoading = true
+      this.$http({
+        url: this.$http.adornUrl('/knowledge/question/chatContent'),
+        method: 'get',
+        params: this.$http.adornParams({
+          page: this.pageIndex,
+          limit: this.pageSize,
+          userName: this.userName,
+          SID: this.SID
+        })
+      }).then(({ data }) => {
+        if (data && data.code === 0) {
+          this.dataList = data.page.list
+          this.totalPage = data.page.totalCount
+        } else {
+          this.dataList = []
+          this.totalPage = 0
+        }
+        this.dataListLoading = false
+      })
+    },
+    // 每页数
+    sizeChangeHandle (val) {
+      this.pageSize = val
+      this.pageIndex = 1
+      this.getDataList()
+    },
+    // 当前页
+    currentChangeHandle (val) {
+      this.pageIndex = val
+      this.getDataList()
+    },
+    getHistory (userName, currentsid) {
+      this.userName = userName
+      this.SID = currentsid
+      this.getDataList()
+    }
   }
+}
 </script>
 
 <style>
