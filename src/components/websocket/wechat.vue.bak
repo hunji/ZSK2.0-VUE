@@ -63,8 +63,7 @@
 </template>
 <script>
 import uploadWS from '@/components/websocket/upload-ws'
-import SockJS from 'sockjs-client'
-import Stomp from 'stompjs'
+
 export default {
   name: 'wechat',
   components: {
@@ -77,9 +76,9 @@ export default {
       currentsid: '',
       currentMessages: [],
       chatContent: '',
+      websocket: null,
       isguest: false,
-      uploadVisible: false,
-      stompClient: null
+      uploadVisible: false
     }
   },
   activated () {
@@ -88,7 +87,9 @@ export default {
 
     // 先获取用户的角色信息，来判断当前用户是否是guest，根据此来获取用户列表
     this.getUserRoleInfo()
-
+  },
+  mounted () {
+    // 增加了websocket连接
     this.initWebsocket()
   },
   updated () {
@@ -96,47 +97,56 @@ export default {
     container.scrollTop = container.scrollHeight
   },
   destroyed () {
-    if (this.stompClient !== null) {
-      console.log('关闭wesocket连接')
-      this.stompClient.disconnect()
-    }
+    this.websocket.close()
   },
   methods: {
     // 建立websocket连接
     initWebsocket () {
-      let socket = new SockJS(this.$http.adornUrl('/knowledge-websocket'))
-      // 获取STOMP子协议的客户端对象
-      this.stompClient = Stomp.over(socket)
-      this.stompClient.connect({username: this.userName}, () => {
-        this.stompClient.subscribe('/user/chat/login', (msg) => {
-          let message = JSON.parse(msg.body)
-          if (message.type === 'ADDUSER') {
-            for (let element of this.guestNames) {
-              if (element.userName === message.sid) {
-                element.isOnline = true
-              }
-            }
-          } else if (message.type === 'QUIT') {
-            for (let element of this.guestNames) {
-              if (element.userName === message.sid) {
-                element.isOnline = false
-              }
-            }
-          } else if (message.type === 'CONTENT') {
-            // 提示音
-            this.$el.querySelector('#notice').play()
-            if (message.userName === this.currentsid) {
-              this.currentMessages.push(message)
-            }
-            // 更新用户展示状态，当不是当前选中项且有新消息传来时显示新的样式
-            for (let element of this.guestNames) {
-              if (element.userName === message.userName && this.currentsid !== message.userName) {
-                element.hasNewInfo = true
-              }
+      let _this = this
+      if ('WebSocket' in window) {
+        _this.websocket = new WebSocket('ws://localhost:8081/renren-fast/websocket/' + this.$store.state.user.name)
+      } else {
+        alert('该浏览器不支持websocket!')
+      }
+      _this.websocket.onopen = function (event) {
+        console.log('建立连接')
+      }
+      _this.websocket.onclose = function (evnet) {
+        console.log('关闭连接')
+      }
+      _this.websocket.onmessage = function (event) {
+        console.log('收到消息' + event.data)
+        // 后台发送过来的信息用WsMessage包装
+        let message = JSON.parse(event.data)
+        if (message.type === 'ADDUSER') {
+          for (let element of _this.guestNames) {
+            if (element.userName === message.sid) {
+              element.isOnline = true
             }
           }
-        })
-      })
+        } else if (message.type === 'QUIT') {
+          for (let element of _this.guestNames) {
+            if (element.userName === message.sid) {
+              element.isOnline = false
+            }
+          }
+        } else if (message.type === 'CONTENT') {
+          // 提示音
+          _this.$el.querySelector('#notice').play()
+          if (message.userName === _this.currentsid) {
+            _this.currentMessages.push(message)
+          }
+          // 更新用户展示状态，当不是当前选中项且有新消息传来时显示新的样式
+          for (let element of _this.guestNames) {
+            if (element.userName === message.userName && _this.currentsid !== message.userName) {
+              element.hasNewInfo = true
+            }
+          }
+        }
+      }
+      _this.websocket.onerror = function (event) {
+        console.log('websocket出错')
+      }
     },
     // 点击用户名时获取聊天记录
     clickUser (guest) {
@@ -157,6 +167,8 @@ export default {
       }).then(({data}) => {
         if (data && data.code === 0) {
           this.isguest = data.isGuest
+          console.log(data.isGuest)
+          console.log(this.isguest)
         }
       }).then(this.getUserList)
     },
@@ -183,6 +195,7 @@ export default {
     },
     // 获取当前用户的聊天记录
     getUserHistory () {
+      console.log(this.currentsid)
       this.$http({
         url: this.$http.adornUrl('/knowledge/question/chatContent'),
         method: 'get',
@@ -193,6 +206,8 @@ export default {
           limit: 20
         })
       }).then(({data}) => {
+        console.log(this.currentMessages)
+        console.log(data)
         if (data && data.code === 0) {
           this.currentMessages = data.page.list
         }
@@ -230,11 +245,12 @@ export default {
         })
         // 通知给后台
         console.log('发送消息:' + JSON.stringify(wsMessage))
-        this.stompClient.send('/chat/hello', {}, JSON.stringify(wsMessage))
+        this.websocket.send(JSON.stringify(wsMessage))
       }
     },
     // 上传文件
     uploadHandle () {
+      console.log('clickme1')
       this.uploadVisible = true
       this.$nextTick(() => {
         this.$refs.upload.init()
